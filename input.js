@@ -1,5 +1,6 @@
-const { connect } = require("http2");
-
+const { moveKeys, msgKeys } = require('./constants');
+let moving;
+let speed = 100;
 let connection;
 
 const setupInput = (conn) => {
@@ -18,17 +19,26 @@ const handleUserInput = key => {
     if (key === '\u0003') {
         process.exit();
     } 
-    if (key === '\u0077') {
-        return connection.write('Move: up')
-    } 
-    if (key === 'a') {
-        return connection.write("Move: left");
-    } 
-    if (key === 's') {
-        return connection.write("Move: down");
-    } 
-    if (key === 'd') {
-        return connection.write("Move: right")
+    for (const [key, value] of Object.entries(msgKeys)) {
+        if (data === key) {
+            connection.write(value);
+        }
+    }
+    for (const [key, value] of Object.entries(moveKeys)) {
+        if (data === key) {
+            clearInterval(moving);
+            moving = setInterval(() => {
+                connection.write(value);
+            }, speed);
+        }
+    }
+    if (data === '=') {
+        connection.write(`Say: speed: ${Math.round(1000 / (speed * 10)) / 10} sq/s`);
+        speed -= 5;
+    }
+    if (data === '-') {
+        connection.write(`Say: speed: ${Math.round(1000 / (speed * 10)) / 10} sq/s`);
+        speed += 5;
     }
 };
 
